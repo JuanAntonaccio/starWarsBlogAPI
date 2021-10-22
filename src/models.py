@@ -9,16 +9,20 @@ class Usuario(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    favoritos_per = db.relationship('Favorito_perso', backref='usuario', lazy=True)
+    favoritos_plane = db.relationship('Favorito_plane', backref='usuario', lazy=True)
     # esto es similiar al toString en Java
     def __repr__(self):
         return '<Usarios %r %r>' % (self.name, self.email)
     # esto deberian tener todas las tablas a crear este metodo
     # que devuelve un diccionario
+
     def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
+            "is_active": self.is_active
             # do not serialize the password, its a security breach
         }
 
@@ -33,7 +37,11 @@ class Favorito_perso(db.Model):
     
 
     def serialize(self):
-        return {}
+        return {
+            "id": self.id,
+            "usuario_id": self.usuario_id,
+            "perso_id": self.perso_id
+        }
 
 class Favorito_plane(db.Model):
     #__tablename__ = 'favoritos_plane'
@@ -42,8 +50,13 @@ class Favorito_plane(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     plane_id = db.Column(db.Integer, db.ForeignKey('planeta.id'))
+
     def serialize(self):
-        return {}
+        return {
+            "id": self.id,
+            "usuario_id": self.usuario_id,
+            "plane_id": self.plane_id
+        }
 
 class Personaje(db.Model):
     #__tablename__='personajes'
@@ -55,8 +68,18 @@ class Personaje(db.Model):
     skin_color = db.Column(db.String(50), nullable=False)
     eye_color = db.Column(db.String(50), nullable=False)
     birth_year = db.Column(db.String(50), nullable=False)
+    usuarios = db.relationship('Favorito_perso', backref='personaje', lazy=True)
+
     def serialize(self):
-        return {}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "height": self.height,
+            "mass": self.mass,
+            "skin_color":self.skin_color,
+            "eye_color": self.eye_color,
+            "birth_year": self.birth_year
+        }
 
 class Planeta(db.Model):
     #__tablename__='planetas'
@@ -70,5 +93,19 @@ class Planeta(db.Model):
     terrain = db.Column(db.String(50), nullable=False)
     surface_water = db.Column(db.String(50), nullable=False)
     population = db.Column(db.String(50), nullable=False)  
+    usuarios = db.relationship('Favorito_plane', backref='planeta', lazy=True)
+
     def serialize(self):
-        return {}      
+        return {
+            "id": self.id,
+            "name": self.name,
+            "rotation_period": self.rotation_period,
+            "orbital_period": self.orbital_period,
+            "diameter":self.diameter,
+            "climate": self.climate,
+            "gravity": self.gravity,
+            "terrain":self.terrain,
+            "surface_water": self.surface_water,
+            "population": self.population
+
+        }      
