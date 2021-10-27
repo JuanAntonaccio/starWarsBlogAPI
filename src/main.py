@@ -55,11 +55,21 @@ def get_all_personajes():
 def add_personaje():
     # primero leo lo que viene en el body
     body_personaje=json.loads(request.data)
-    # print (body_personaje)
-    return jsonify()
+    #print (body_personaje)
+    persona=Personaje(name=body_personaje['name'],height=body_personaje['height'],mass=body_personaje['mass'],hair_color=body_personaje['hair_color'],skin_color=body_personaje['skin_color'],eye_color=body_personaje['eye_color'],birth_year=body_personaje['birth_year'])
     
-    db.session.add_personaje()                
+    
+    db.session.add(persona)               
     db.session.commit()
+    
+    personajes=Personaje.query.all()
+    personajes = list(map(lambda per: per.serialize(), personajes ))
+    if not personajes:
+        return jsonify("no se encontraron personajes"),404
+        
+    return jsonify(personajes), 200  
+    
+
     
 
 
