@@ -51,6 +51,17 @@ def get_all_personajes():
         
     return jsonify(personajes), 200    
 
+@app.route('/personajes/<int:id>', methods=['GET'])
+def get_personaje():
+
+    personajes=Personaje.query.get(id)
+    personajes = list(map(lambda per: per.serialize(), personajes ))
+    if not personajes:
+        return jsonify("no se encontro al personaje"),404
+        
+    return jsonify(personajes), 200 
+
+
 @app.route('/personajes', methods=['POST'])
 def add_personaje():
     # primero leo lo que viene en el body
