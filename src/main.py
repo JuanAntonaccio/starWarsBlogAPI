@@ -52,10 +52,10 @@ def get_all_personajes():
     return jsonify(personajes), 200    
 
 @app.route('/personajes/<int:id>', methods=['GET'])
-def get_personaje():
+def get_personaje(id):
 
-    personajes=Personaje.query.get(id)
-    personajes = list(map(lambda per: per.serialize(), personajes ))
+    personajes=(Personaje.query.get(id)).serialize()
+    #personajes = list(map(lambda per: per.serialize(), personajes ))
     if not personajes:
         return jsonify("no se encontro al personaje"),404
         
@@ -86,7 +86,7 @@ def add_personaje():
 
 
 @app.route('/personajes/<int:id>', methods=['PUT'])
-def update_personaje():
+def update_personaje(id):
     body=json.loads(request.data)
     personaje=Personaje.query.get(id)
     if personaje is None:
@@ -115,7 +115,7 @@ def update_personaje():
 
 
 @app.route('/personajes/<int:id>', methods=['DELETE'])
-def delete_personaje():
+def delete_personaje(id):
     
     personaje=Personaje.query.get(id)
     if personaje is None:
