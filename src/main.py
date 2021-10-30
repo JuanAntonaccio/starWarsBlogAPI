@@ -31,7 +31,11 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/users', methods=['GET'])
+#-----------------------------------------------------------
+# Endpoints de usuarios
+#-----------------------------------------------------------
+
+@app.route('/usuarios', methods=['GET'])
 def get_all_users():
 
     usuarios=Usuario.query.all()
@@ -40,6 +44,120 @@ def get_all_users():
         return jsonify("no se encontraron usuarios"),404
         
     return jsonify(usuarios), 200
+
+@app.route('/usuarios', methods=['POST'])
+def add_user():
+    # primero leo lo que viene en el body
+    body_us=json.loads(request.data)
+    #print (body_us)
+    usuario=Usuario(name=body_us['name'],email=body_us['email'],password=body_us['password'],is_active=body_us['is_active'])
+    db.session.add(usuario)               
+    db.session.commit()
+    
+    
+
+    usuarios=Usuario.query.all()
+    usuarios = list(map(lambda usuario: usuario.serialize(), usuarios ))
+    if not usuarios:
+        return jsonify("no se encontraron usuarios"),404
+        
+    return jsonify(usuarios), 200
+
+#-----------------------------------------------
+# EndPoints de Favoritos Personajes
+# ----------------------------------------------   
+@app.route('/favoritosPersonajes', methods=['POST'])
+def add_fav_per():
+    # primero leo lo que viene en el body
+    body_fav=json.loads(request.data)
+    #print (body_fav)
+    esta1=False
+    esta2=False
+    if "perso_id" in body_fav:
+        personaje=Personaje.query.get(body_fav['perso_id'])
+        if personaje is None:
+            raise APIException('Personaje no encontrado',status_code=404)
+        else:
+            esta1=True
+    if "usuario_id" in body_fav:    
+        usuario=Usuario.query.get(body_fav['usuario_id'])
+        if usuario is None:
+            raise APIException('Usuario no encontrado',status_code=404)
+        else:
+            esta2=True    
+    esta=esta1 and esta2
+    if esta:        
+        favper=Favorito_perso(usuario_id=body_fav['usuario_id'],perso_id=body_fav['perso_id'])
+        db.session.add(favper)               
+        db.session.commit()
+    
+    
+
+    favoritos=Favorito_perso.query.all()
+    favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
+    if not favoritos:
+        return jsonify("no se encontraron favoritos personajes"),404
+        
+    return jsonify(favoritos), 200
+
+@app.route('/favoritosPersonajes', methods=['GET'])
+def get_all_favper():
+
+    favoritos=Favorito_perso.query.all()
+    favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
+    if not favoritos:
+        return jsonify("no se encontraron favoritos personajes"),404
+        
+    return jsonify(favoritos), 200
+
+#-----------------------------------------------
+# EndPoints de FavoritosPlanetas
+#-----------------------------------------------
+
+@app.route('/favoritosPlanetas', methods=['POST'])
+def add_fav_pla():
+    # primero leo lo que viene en el body
+    body_fav=json.loads(request.data)
+    #print (body_fav)
+    esta1=False
+    esta2=False
+    if "plane_id" in body_fav:
+        planeta=Planeta.query.get(body_fav['plane_id'])
+        if planeta is None:
+            raise APIException('Planeta no encontrado',status_code=404)
+        else:
+            esta1=True
+    if "usuario_id" in body_fav:    
+        usuario=Usuario.query.get(body_fav['usuario_id'])
+        if usuario is None:
+            raise APIException('Usuario no encontrado',status_code=404)
+        else:
+            esta2=True    
+    esta=esta1 and esta2
+    if esta:        
+        favpla=Favorito_plane(usuario_id=body_fav['usuario_id'],plane_id=body_fav['plane_id'])
+        db.session.add(favpla)               
+        db.session.commit()
+    
+    
+
+    favoritos=Favorito_plane.query.all()
+    favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
+    if not favoritos:
+        return jsonify("no se encontraron favoritos planetas"),404
+        
+    return jsonify(favoritos), 200
+
+@app.route('/favoritosPlanetas', methods=['GET'])
+def get_all_favper():
+
+    favoritos=Favorito_plane.query.all()
+    favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
+    if not favoritos:
+        return jsonify("no se encontraron favoritos planetas"),404
+        
+    return jsonify(favoritos), 200
+
 
 #-------------------------------------------------
 # EndPoints de Personajes
