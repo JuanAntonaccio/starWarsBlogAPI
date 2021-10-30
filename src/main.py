@@ -41,6 +41,10 @@ def get_all_users():
         
     return jsonify(usuarios), 200
 
+#-------------------------------------------------
+# EndPoints de Personajes
+# -------------------------------------------    
+
 @app.route('/personajes', methods=['GET'])
 def get_all_personajes():
 
@@ -129,6 +133,107 @@ def delete_personaje(id):
         
     return jsonify(personajes), 200  
 
+#-------------------------------------------------
+# EndPoints de Planetas
+# -------------------------------------------    
+#   
+
+@app.route('/planetas', methods=['GET'])
+def get_all_planetas():
+
+    planetas=Planeta.query.all()
+    planetas = list(map(lambda pla: pla.serialize(), planetas ))
+    if not planetas:
+        return jsonify("no se encontraron planetas"),404
+        
+    return jsonify(planetas), 200    
+
+@app.route('/planetas/<int:id>', methods=['GET'])
+def get_planeta(id):
+
+    planetas=(Planeta.query.get(id))
+    if planetas != None:
+        planetas=planetas.serialize()
+    
+    
+    if not planetas:
+        return jsonify("no se encontro al planeta"),404
+    else:    
+        return jsonify(planetas), 200 
+
+
+@app.route('/planetas', methods=['POST'])
+def add_planeta():
+    # primero leo lo que viene en el body
+    b_pl=json.loads(request.data)
+    #print (b_pl)
+    planeta=Planeta(name=b_pl['name'],rotation_period=b_pl['rotation_period'],orbital_period=b_pl['orbital_period'],diameter=b_pl['diameter'],climate=b_pl['climate'],gravity=b_pl['gravity'],terrain=b_pl['terrain'],surface_water=b_pl['surface_water'],population=b_pl['population'])
+    
+    
+    db.session.add(planeta)               
+    db.session.commit()
+    
+    planetas=Planeta.query.all()
+    planetas = list(map(lambda plan: plan.serialize(), planetas ))
+    if not planetas:
+        return jsonify("no se encontraron planetas"),404
+        
+    return jsonify(planetas), 200  
+    
+
+    
+
+
+
+@app.route('/planetas/<int:id>', methods=['PUT'])
+def update_planeta(id):
+    body=json.loads(request.data)
+    planeta=Planeta.query.get(id)
+    if planeta is None:
+        raise APIException('Planeta no encontrado',status_code=404)
+    if "name" in body:
+        planeta.name=body['name']
+    if "rotation_period" in body:
+        planeta.rotation_period=body['rotation_period']  
+    if "orbital_period" in body:
+        planeta.orbital_period=body['orbital_period']
+    if "diameter" in body:
+        planeta.diameter=body['diameter'] 
+    if "climate" in body:
+        planeta.climate=body['climate']    
+    if "gravity" in body:
+        planeta.gravity=body['gravity']    
+    if "terrain" in body:
+        planeta.terrain=body['terrain']
+    if "surface_water" in body:
+        planeta.surface_water=body['surface_water']
+    if "population" in body:
+        planeta.population=body['population']
+  
+
+    db.session.commit()
+    planetas=Planeta.query.all()
+    planetas = list(map(lambda plan: plan.serialize(), planetas ))
+    if not planetas:
+        return jsonify("no se encontraron planetas"),404
+        
+    return jsonify(planetas), 200  
+
+
+@app.route('/planetas/<int:id>', methods=['DELETE'])
+def delete_planeta(id):
+    
+    planeta=Planeta.query.get(id)
+    if planeta is None:
+        raise APIException('Planeta no encontrado',status_code=404)
+    db.session.delete(planeta)                
+    db.session.commit()
+    planetas=Planeta.query.all()
+    planetas = list(map(lambda plan: plan.serialize(), planetas ))
+    if not planetas:
+        return jsonify("no se encontraron planetas"),404
+        
+    return jsonify(planetas), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
