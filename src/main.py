@@ -63,6 +63,26 @@ def add_user():
         
     return jsonify(usuarios), 200
 
+
+@app.route('/usuarios/favoritos/<int:id>', methods=['GET'])
+def get_all_users_favoritos(id):
+    favoritos={}
+
+    usu_per=Favorito_perso.query.filter_by(usuario_id=id)
+    usu_plan=Favorito_plane.query.filter_by(usuario_id=id)
+    usu_per=list(map(lambda favoritos_per: favoritos_per.serialize(), usu_per))
+    usu_plan=list(map(lambda favoritos_plane: favoritos_plane.serialize(), usu_plan))
+    #usuarios={"personajes":usu_per,
+    #          "planetas":usu_pan}
+    #usuario2=json.dumps(usuarios)
+    favoritos['personajes']=usu_per
+    favoritos['planetas']=usu_plan
+    if not favoritos:
+        return jsonify("no se encontraron usuarios"),404
+        
+    return jsonify(favoritos), 200
+
+
 #-----------------------------------------------
 # EndPoints de Favoritos Personajes
 # ----------------------------------------------   
@@ -86,7 +106,12 @@ def add_fav_per():
         else:
             esta2=True    
     esta=esta1 and esta2
+
+
     if esta:        
+        preg=Favorito_perso.query.filter(Favorito_perso.usuario_id==body_fav['usuario_id'],Favorito_perso.perso_id==body_fav['perso_id']).first()
+        if preg:
+            raise APIException('Favorito Personaje repetido',status_code=404)
         favper=Favorito_perso(usuario_id=body_fav['usuario_id'],perso_id=body_fav['perso_id'])
         db.session.add(favper)               
         db.session.commit()
@@ -99,6 +124,46 @@ def add_fav_per():
         return jsonify("no se encontraron favoritos personajes"),404
         
     return jsonify(favoritos), 200
+
+@app.route('/favoritosPersonajes', methods=['DELETE'])
+def delete_fav_per():
+    # primero leo lo que viene en el body
+    body_fav=json.loads(request.data)
+    #print (body_fav)
+    esta1=False
+    esta2=False
+    if "perso_id" in body_fav:
+        personaje=Personaje.query.get(body_fav['perso_id'])
+        if personaje is None:
+            raise APIException('Personaje no encontrado',status_code=404)
+        else:
+            esta1=True
+    if "usuario_id" in body_fav:    
+        usuario=Usuario.query.get(body_fav['usuario_id'])
+        if usuario is None:
+            raise APIException('Usuario no encontrado',status_code=404)
+        else:
+            esta2=True    
+    esta=esta1 and esta2
+
+
+    if esta:        
+        favper=Favorito_perso.query.filter(Favorito_perso.usuario_id==body_fav['usuario_id'],Favorito_perso.perso_id==body_fav['perso_id']).first()
+        if favper:
+            db.session.delete(favper)             
+            db.session.commit()
+        else:
+            raise APIException('Datos no encontrados en favoritos personajes',status_code=404)
+        
+    
+    
+
+    favoritos=Favorito_perso.query.all()
+    favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
+    if not favoritos:
+        return jsonify("no se encontraron favoritos personajes"),404
+        
+    return jsonify(favoritos), 200    
 
 @app.route('/favoritosPersonajes', methods=['GET'])
 def get_all_favper():
@@ -134,7 +199,10 @@ def add_fav_pla():
         else:
             esta2=True    
     esta=esta1 and esta2
-    if esta:        
+    if esta:       
+        preg=Favorito_plane.query.filter(Favorito_plane.usuario_id==body_fav['usuario_id'],Favorito_plane.plane_id==body_fav['plane_id']).first()
+        if preg:
+            raise APIException('Favorito Planeta repetido',status_code=404) 
         favpla=Favorito_plane(usuario_id=body_fav['usuario_id'],plane_id=body_fav['plane_id'])
         db.session.add(favpla)               
         db.session.commit()
@@ -149,7 +217,7 @@ def add_fav_pla():
     return jsonify(favoritos), 200
 
 @app.route('/favoritosPlanetas', methods=['GET'])
-def get_all_favper():
+def get_all_favpla():
 
     favoritos=Favorito_plane.query.all()
     favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
@@ -157,6 +225,48 @@ def get_all_favper():
         return jsonify("no se encontraron favoritos planetas"),404
         
     return jsonify(favoritos), 200
+
+
+@app.route('/favoritosPlanetas', methods=['DELETE'])
+def delete_fav_planeta():
+    # primero leo lo que viene en el body
+    body_fav=json.loads(request.data)
+    #print (body_fav)
+    esta1=False
+    esta2=False
+    if "plan_id" in body_fav:
+        planeta=Planeta.query.get(body_fav['plane_id'])
+        if planeta is None:
+            raise APIException('Planeta no encontrado',status_code=404)
+        else:
+            esta1=True
+    if "usuario_id" in body_fav:    
+        usuario=Usuario.query.get(body_fav['usuario_id'])
+        if usuario is None:
+            raise APIException('Usuario no encontrado',status_code=404)
+        else:
+            esta2=True    
+    esta=esta1 and esta2
+
+
+    if esta:        
+        favpla=Favorito_plane.query.filter(Favorito_plane.usuario_id==body_fav['usuario_id'],Favorito_plane.plane_id==body_fav['plane_id']).first()
+        if favpla:
+            db.session.delete(favpla)             
+            db.session.commit()
+        else:
+            raise APIException('Datos no encontrados en favoritos planetas',status_code=404)
+        
+    
+    
+
+    favoritos=Favorito_plane.query.all()
+    favoritos = list(map(lambda favo: favo.serialize(), favoritos ))
+    if not favoritos:
+        return jsonify("no se encontraron favoritos planetas"),404
+        
+    return jsonify(favoritos), 200    
+
 
 
 #-------------------------------------------------
