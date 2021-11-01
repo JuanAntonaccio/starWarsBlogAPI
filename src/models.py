@@ -13,7 +13,7 @@ class Usuario(db.Model):
     favoritos_plane = db.relationship('Favorito_plane', backref='usuario', lazy=True)
     # esto es similiar al toString en Java
     def __repr__(self):
-        return '<Usarios %r %r>' % (self.name, self.email)
+        return '<Usuario %r %r>' % (self.name, self.email)
     # esto deberian tener todas las tablas a crear este metodo
     # que devuelve un diccionario
 
